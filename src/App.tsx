@@ -1,26 +1,20 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { DrawingBoard } from './service/DrawingBoard';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const parent = useRef<HTMLDivElement>(null);
+  const drawingBoard = useRef<DrawingBoard>();
+
+  useEffect(() => {
+    drawingBoard.current = new DrawingBoard(parent.current as HTMLDivElement);
+    return () => {
+      drawingBoard.current?.unmount();
+    };
+  }, []);
+
+  return <div ref={parent} className="App"></div>;
 }
 
 export default App;
