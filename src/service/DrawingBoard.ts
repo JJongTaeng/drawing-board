@@ -34,6 +34,13 @@ export class DrawingBoard {
     this.redraw();
   }
 
+  clear() {
+    this.current += 1;
+    this.drawingObjectList = [];
+    this.history.push([]);
+    this.redraw();
+  }
+
   unmount() {
     this.parentElement.removeChild(this.canvasElement);
   }

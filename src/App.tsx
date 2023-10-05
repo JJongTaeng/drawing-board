@@ -18,6 +18,7 @@ function App() {
     <>
       <button onClick={() => drawingBoard.current?.prev()}>prev</button>
       <button onClick={() => drawingBoard.current?.next()}>next</button>
+      <button onClick={() => drawingBoard.current?.clear()}>clear</button>
       <div ref={parent} className="App"></div>
     </>
   );
