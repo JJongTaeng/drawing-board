@@ -14,7 +14,13 @@ function App() {
     };
   }, []);
 
-  return <div ref={parent} className="App"></div>;
+  return (
+    <>
+      <button onClick={() => drawingBoard.current?.prev()}>prev</button>
+      <button onClick={() => drawingBoard.current?.next()}>next</button>
+      <div ref={parent} className="App"></div>
+    </>
+  );
 }
 
 export default App;

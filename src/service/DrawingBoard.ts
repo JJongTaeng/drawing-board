@@ -13,13 +13,25 @@ export class DrawingBoard {
   canvasElement = document.createElement('canvas');
 
   private drawingObjectList: DrawingObject[] = [];
+  private history: DrawingObject[][] = [];
+  current: number = -1;
   constructor(private parentElement: HTMLDivElement) {
     this.parentElement = parentElement;
     if (!this.canvasElement) throw new Error('not defined canvasElement');
-
     this.ctx = this.canvasElement.getContext('2d');
-
     this.init();
+  }
+
+  prev() {
+    this.current -= 1;
+    this.drawingObjectList = structuredClone(this.history[this.current]);
+    this.redraw();
+  }
+
+  next() {
+    this.current += 1;
+    this.drawingObjectList = structuredClone(this.history[this.current]);
+    this.redraw();
   }
 
   unmount() {
@@ -27,9 +39,6 @@ export class DrawingBoard {
   }
 
   private init() {
-    this.canvasElement.style.position = 'absolute';
-    this.canvasElement.style.left = '0';
-    this.canvasElement.style.top = '0';
     this.canvasElement.style.display = 'block';
 
     this.canvasElement.addEventListener(
@@ -37,7 +46,7 @@ export class DrawingBoard {
       this.mousedown.bind(this),
       false,
     );
-    window.addEventListener(
+    this.canvasElement.addEventListener(
       // 마우스 up
       'mouseup',
       this.mouseup.bind(this),
@@ -58,6 +67,13 @@ export class DrawingBoard {
     document.addEventListener('mouseout', (e) => {
       // 마우스 브라우저 창 밖으로 이동
       if (!e.relatedTarget) {
+        if (this.painting) {
+          this.mouseup();
+        }
+      }
+    });
+    this.canvasElement.addEventListener('mouseout', (e) => {
+      if (this.painting) {
         this.mouseup();
       }
     });
@@ -67,12 +83,11 @@ export class DrawingBoard {
   }
   private draw(e: MouseEvent) {
     if (!this.ctx) throw new Error('not defined ctx');
-
     const xRatio =
-      (e.clientX - this.canvasElement.offsetLeft) /
+      (e.offsetX - this.canvasElement.offsetLeft) /
       (this.canvasElement.width / window.devicePixelRatio);
     const yRatio =
-      (e.clientY - this.canvasElement.offsetTop) /
+      (e.offsetY - this.canvasElement.offsetTop) /
       (this.canvasElement.height / window.devicePixelRatio);
 
     this.ctx.lineTo(
@@ -102,6 +117,9 @@ export class DrawingBoard {
   }
 
   private mousedown(e: MouseEvent) {
+    if (this.current !== this.history.length - 1) {
+      this.history = this.history.slice(0, this.current + 1);
+    }
     this.painting = true;
     this.drawingObjectList.push(
       new DrawingObject(
@@ -110,6 +128,7 @@ export class DrawingBoard {
         this.penType.isTemporaryDrawing,
       ),
     );
+
     this.draw(e);
   }
 
@@ -129,6 +148,9 @@ export class DrawingBoard {
         this.redraw();
       }, 3000);
     }
+
+    this.current += 1;
+    this.history.push(structuredClone(this.drawingObjectList));
   }
 
   private resize() {
