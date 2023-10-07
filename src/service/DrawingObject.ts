@@ -18,7 +18,7 @@ export class DrawingObject {
     return this.id;
   }
 
-  get() {
+  get(): DrawingObjectType {
     const { id, path, color, shape, isTemporaryDrawing } = this;
     return {
       id,

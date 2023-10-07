@@ -12,9 +12,14 @@ export class DrawingBoard {
   ctx: CanvasRenderingContext2D | null;
   canvasElement = document.createElement('canvas');
 
-  private drawingObjectList: DrawingObject[] = [];
-  private history: DrawingObject[][] = [];
-  current: number = -1;
+  private drawingObjectList: DrawingObjectType[] = [
+    new DrawingObject(Color.RED, Shape.PEN, false).get(),
+  ];
+  private history: DrawingObjectType[][] = [
+    [new DrawingObject(Color.RED, Shape.PEN, false).get()],
+  ];
+
+  current: number = 0;
   constructor(private parentElement: HTMLDivElement) {
     this.parentElement = parentElement;
     if (!this.canvasElement) throw new Error('not defined canvasElement');
@@ -23,12 +28,14 @@ export class DrawingBoard {
   }
 
   prev() {
+    if (this.current === 0) return;
     this.current -= 1;
     this.drawingObjectList = structuredClone(this.history[this.current]);
     this.redraw();
   }
 
   next() {
+    if (this.current >= this.history.length - 1) return;
     this.current += 1;
     this.drawingObjectList = structuredClone(this.history[this.current]);
     this.redraw();
@@ -39,6 +46,11 @@ export class DrawingBoard {
     this.drawingObjectList = [];
     this.history.push([]);
     this.redraw();
+  }
+
+  changeColor(color: Color) {
+    this.penType.color = color;
+    this.setPenType();
   }
 
   unmount() {
@@ -110,7 +122,7 @@ export class DrawingBoard {
       yRatio * (this.canvasElement.height / window.devicePixelRatio),
     );
 
-    this.drawingObjectList[this.drawingObjectList.length - 1].addPath({
+    this.drawingObjectList[this.drawingObjectList.length - 1].path.push({
       xRatio,
       yRatio,
     });
@@ -133,7 +145,7 @@ export class DrawingBoard {
         this.penType.color,
         this.penType.shape,
         this.penType.isTemporaryDrawing,
-      ),
+      ).get(),
     );
 
     this.draw(e);
@@ -178,7 +190,6 @@ export class DrawingBoard {
   }
 
   private redraw() {
-    this.setPenType();
     const widthRatio = this.canvasElement.width / window.devicePixelRatio;
     const heightRatio = this.canvasElement.height / window.devicePixelRatio;
     if (!this.ctx) throw new Error();
@@ -191,7 +202,12 @@ export class DrawingBoard {
 
     for (let i = 0; i < this.drawingObjectList.length; i++) {
       // 모든 경로 순회
+
       const drawingObject = this.drawingObjectList[i];
+      this.penType.color = drawingObject.color;
+      this.penType.shape = drawingObject.shape;
+      this.penType.isTemporaryDrawing = drawingObject.isTemporaryDrawing;
+      this.setPenType();
       const path = drawingObject.path;
       if (path.length === 0) continue;
 
@@ -202,12 +218,12 @@ export class DrawingBoard {
         path[0].yRatio * heightRatio,
       );
 
-      for (var j = 1; j < path.length; j++) {
+      for (let j = 1; j < path.length; j++) {
         // 각 경로의 모든 점 순회
         const point = path[j];
         const prevPoint = path[j - 1];
 
-        for (var t = 0; t <= 1; t += 0.02) {
+        for (let t = 0; t <= 1; t += 0.02) {
           const interX =
             prevPoint.xRatio * widthRatio * (1 - t) +
             point.xRatio * widthRatio * t;

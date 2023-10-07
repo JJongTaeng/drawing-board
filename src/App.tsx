@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { DrawingBoard } from './service/DrawingBoard';
+import { Color } from './types/drawing';
 
 function App() {
   const parent = useRef<HTMLDivElement>(null);
@@ -19,6 +19,12 @@ function App() {
       <button onClick={() => drawingBoard.current?.prev()}>prev</button>
       <button onClick={() => drawingBoard.current?.next()}>next</button>
       <button onClick={() => drawingBoard.current?.clear()}>clear</button>
+      <button onClick={() => drawingBoard.current?.changeColor(Color.RED)}>
+        RED
+      </button>
+      <button onClick={() => drawingBoard.current?.changeColor(Color.BLUE)}>
+        BLUE
+      </button>
       <div ref={parent} className="App"></div>
     </>
   );
